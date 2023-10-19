@@ -133,7 +133,7 @@ const allPersons = filteredPersons.map(person => {
     <div>
       <Notification message={notification} />
       <Filter value={filterValue} handleChange={handleNewFilter}/>
-      <h2>FullStack Phonebook :)</h2>
+      <h2>Phonebook</h2>
       <Form onSubmit={addPerson} nameValue={newName} handleNameValue={handleNewName} nroValue={newNro} handleNroValue={handleNewNro} />
       <h2>Numbers</h2>
       <Persons persons={allPersons}/>
