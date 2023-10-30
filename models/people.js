@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+require('dotenv').config();
 
 mongoose.set('strictQuery', false)
 
@@ -13,7 +14,7 @@ mongoose.connect(url)
     console.log('error connecting to MongoDB:', error.message)  
   })
 
-const peopleSchema = new mongoose.Schema({
+const personSchema = new mongoose.Schema({
   name: {
     type: String,
     minLength: 3,
@@ -40,4 +41,4 @@ personSchema.set('toJSON', {
   }
 })
 
-module.exports = mongoose.model('People', peopleSchema)
+module.exports = mongoose.model('Person', personSchema)

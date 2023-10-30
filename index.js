@@ -2,6 +2,7 @@ const morgan = require('morgan')
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const Person = require('./models/people')
 
 app.use(express.static('dist'))
 app.use(cors())
@@ -35,60 +36,80 @@ app.get('/', (req, res) => {
   res.send()
 })
 
-app.get('/api/persons', (req, res) => {
-  res.json(persons)
+app.get('/api/persons', (req, res, next) => {
+  Person.find({})
+		.then(result => {
+      console.log(result)
+			res.json(result)
+		}).catch(error => next(error))
 })
 
 
-app.delete('/api/persons/:id', (req, res) => {
-  const personById = persons.persons.find(elm => elm.id === Number(req.params.id))
-  if(personById) {
-    persons.persons = persons.persons.filter(elm => elm.id !== Number(req.params.id))
-    res.status(204).end()
-  } else {
-    res.status(404).end()
-  }
+app.get('/api/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id)
+		.then(person => {
+			if(person){
+				res.json(person)
+			}else{
+				res.status(404).end()
+			}
+		}).catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (req, res) => {
-  const personById = persons.persons.find(elem => elem.id === Number(req.params.id))
-  if(personById) {
-    res.json(personById)
-  } else {
-    res.status(404).end()
-  }
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+		.then(() => {
+			res.status(204).end()
+		}).catch(error => next(error))
 })
 
 const postMorgan = morgan(':method :url :status :res[content-length] - :response-time ms :body')
 
 app.post('/api/persons', postMorgan, (req, res, next) => {
-  const newPerson = req.body
-  if(!newPerson.name || !newPerson.number) {
-    return res.status(400).json({
+  const body = req.body
+
+	if(!body.name || !body.number){
+		return res.status(400).json({
 			error: 'name or number missing'
 		})
-  }else if (persons.persons.find(elm => elm.name === newPerson.name)) {
-    return res.status(400).json({
-			error: 'name must be unique'
-		})
-  }else{
-    const id = Math.floor(Math.random() * 10000)
-    newPerson.id = id.toString()
-    persons.persons = persons.persons.concat(newPerson)
+	}else{
+		const person = new Person({
+			name: body.name,
+			number: body.number,
+		}) 
 
-    res.json(newPerson)
-    }
+		person.save()
+			.then(person => {
+				res.json(person)
+			}).catch(error => next(error))
+	}
 })
 
-app.get('/info', (req, res) => {
+app.put('/api/persons/:id', (req, res, next) => {
+	const { name, number } = req.body
+
+	Person.findByIdAndUpdate(
+		req.params.id,
+		{ name, number },
+		{ new: true, runValidators: true, context: 'query' }
+	)
+		.then(updatedPerson => {
+			res.json(updatedPerson)
+		})
+		.catch(error => next(error))
+})
+
+
+app.get('/info', (req, res, next) => {
   const date = new Date()
-  const numberOfPersons = persons.persons.length
-  res.send(
-    `
-    <p>Phonebook has ${numberOfPersons} contacts </p>
-    <p>${date}</p>
-    `
-  )
+  Person.find({})
+		.then(result => {
+			res.send(
+				`<p>Phonebook has info for ${result.length} persons</p>
+             <br>
+             <p>${date}</p>`
+			)
+		}).catch(error => next(error))
 })
 
 

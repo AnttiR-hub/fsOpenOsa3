@@ -59,7 +59,8 @@ const App = () => {
 
   useEffect(()=>{
     personService.getAll().then(response =>{
-      setPersons(response.data.persons)
+      console.log(response)
+      setPersons(response.data)
     })
   }, [])
 
@@ -67,10 +68,14 @@ const App = () => {
     const person = persons.find(n => n.id === id)
     if(window.confirm(`Delete ${person.name} ?`))
     {
-      personService.deletePerson(id).then(response => {console.log(response.data)}).catch(() => {
+      personService.deletePerson(id)
+      .then(response => {console.log(response.data)})
+      .catch(() => {
         setNotification(`Information of ${person.name} has already been removed from server`)
       })
+
       setPersons(persons.filter(persons => persons.id !== id))
+
       setNotification(`Successfully deleted ${person.name}`)
           setTimeout(() => {
           setNotification(null)
@@ -86,22 +91,27 @@ const App = () => {
     }
 
     if(persons.find((elem) => elem.name === newName)) {
-      //alert(`${newName} is already added to phonebook`)
       if(window.confirm(`${newName} is already added to phonebook. Want to replace old number?`)) {
         const updatedPerson = persons.find((elem) => elem.name === newName)
-        console.log(updatedPerson)
-        personService.update(updatedPerson.id, personObj).then(response => {console.log(response.data)}).catch((err) => {
-          setNotification(`${err}`)
+
+        personService.update(updatedPerson.id, personObj)
+        .then(response => {console.log(response.data)})
+        .catch((err) => {
+          setNotification(`${err.response.data}`)
         })
+
         setTimeout(() => {
           setNotification(`Number of ${newName} is changed`)
         }, 5000)
       }
 
     } else {
-      personService.create(personObj).then(response => {console.log(response.data)}).catch((err) => {
-        setNotification(`${err}`)
+      personService.create(personObj)
+      .then(response => {console.log(response.data)})
+      .catch((err) => {
+        setNotification(`${err.response.data}`)
       })
+
       setNotification(`Successfully added ${newName}`)
           setTimeout(() => {
           setNotification(null)
